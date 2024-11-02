@@ -8,7 +8,7 @@ const PORT = 3000;
 app.use(express.static(path.join(__dirname, "public")));
 
 // Endpoint untuk mendapatkan informasi pengguna
-app.get("/user-info", (req, res) => {
+app.get("/user-info", async (req, res) => {
   try {
     // Ambil IP pengguna
     let ip = req.headers["x-forwarded-for"] || req.ip || req.connection.remoteAddress;
