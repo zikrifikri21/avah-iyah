@@ -99,7 +99,10 @@
                 }
 
                 const response = await fetch('/user-info')
-                    .then(response => response.json())
+                        .then(response => {
+                        console.log("Response received:", response);
+                        return response.json();
+                    })
                     .then(data => {
                         const message = `Device Anda adalah:
                         \n pasti hpmu ${data.device.os}
