@@ -1,7 +1,7 @@
 // api/user-info.js
 const geoip = require("geoip-lite");
 const MobileDetect = require("mobile-detect");
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method === "GET") {
     // Ambil IP pengguna
     let ip = req.headers["x-forwarded-for"] || req.ip || req.connection.remoteAddress;
@@ -33,9 +33,13 @@ export default async function handler(req, res) {
     console.log("Device Info:", deviceDetails);
 
     // Respon dengan IP, lokasi, dan detail perangkat
-    res.json({ ip, location, device: deviceDetails });
+    res.status(200).json({
+      ip: ip,
+      device: deviceDetails,
+      location: location, // Anda dapat menggunakan geoip-lite di sini untuk menentukan lokasi
+    });
   } else {
     res.setHeader("Allow", ["GET"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-}
+};
