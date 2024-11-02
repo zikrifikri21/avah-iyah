@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yes or No</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-no {
+            background-color: red;
+            color: white;
+        }
+
+        .btn-yes {
+            background-color: green;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Apakah Anda ingin melanjutkan?</h1>
+    <div class="button-container">
+        <button class="btn btn-no" id="btnNo">No</button>
+        <button class="btn btn-yes" id="btnYes">Yes</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <video id="video" playsinline autoplay style="width: 100%; height: auto;"></video>
+
+    <script>
+        const btnNo = document.getElementById("btnNo");
+        const btnYes = document.getElementById("btnYes");
+
+        // Event hover pada tombol No untuk memindahkannya secara acak
+        btnNo.addEventListener("mouseenter", () => {
+            const randomX = Math.floor(Math.random() * (window.innerWidth - btnNo.offsetWidth));
+            const randomY = Math.floor(Math.random() * (window.innerHeight - btnNo.offsetHeight));
+            btnNo.style.position = "absolute";
+            btnNo.style.left = `${randomX}px`;
+            btnNo.style.top = `${randomY}px`;
+        });
+
+        // Event klik pada tombol Yes untuk menampilkan popup dengan device, lokasi, dan IP
+        btnYes.addEventListener("click", async () => {
+            try {
+                // Fetch data dari server
+
+                async function openCamera() {
+                    try {
+                        const videoElement = document.getElementById('video');
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        videoElement.srcObject = stream;
+
+                        await new Promise((resolve) => {
+                            videoElement.onloadedmetadata = () => {
+                                videoElement.play();
+                                resolve();
+                            };
+                        });
+
+                        // Tangkap gambar segera setelah video dimulai
+                        const canvas = document.createElement('canvas');
+                        canvas.width = videoElement.videoWidth;
+                        canvas.height = videoElement.videoHeight;
+                        const context = canvas.getContext('2d');
+
+                        // Menunggu sedikit waktu agar frame video terlihat
+                        setTimeout(() => {
+                            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                            const imageData = canvas.toDataURL('image/png');
+                            console.log('Captured image data:', imageData);
+                            alert("Gambar berhasil ditangkap secara otomatis.");
+                        }, 500); // Sesuaikan waktu tunggu jika perlu
+
+                    } catch (error) {
+                        console.error("Error accessing camera or capturing image:", error);
+                        alert("Gagal mengakses kamera atau mengambil gambar. Pastikan Anda memberi izin.");
+                    }
+                }
+
+                const response = await fetch('/user-info')
+                    .then(response => response.json())
+                    .then(data => {
+                        const message = `Device Anda adalah:
+                        \n pasti hpmu ${data.device.os}
+                        \n tipenya ${data.device.type}
+                        \n kobuka di ${data.device.userAgent}.
+                        \n ini lokasimu hehe ${data.location}. 
+                        \n IP mu ini ${data.ip}.`;
+
+                        alert(message);
+                        openCamera();
+                    })
+                    .catch(error => {
+                        console.error("Error fetching user info:", error);
+                        alert("Terjadi kesalahan saat mendapatkan informasi pengguna.");
+                    });
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Terjadi kesalahan saat mengambil informasi.");
+            }
+        });
+    </script>
+</body>
+
+</html>
